@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Invite Links Maker</title>
+<style>
+ body{font-family:system-ui,Arial,sans-serif;margin:0;background:#170d0c;color:#f5ead2;padding:18px}
+ h1{font-size:22px;color:#e8c583;margin:0 0 6px} p{color:#d8c8a6;margin:4px 0 12px;font-size:14px}
+ textarea,input{width:100%;box-sizing:border-box;background:#2a1a18;color:#f5ead2;border:1px solid #c9a15a;border-radius:8px;padding:10px;font-size:15px}
+ textarea{height:140px} label{display:block;margin-top:10px;font-size:13px;color:#c9a15a}
+ button{background:#c9a15a;color:#170d0c;border:0;border-radius:8px;padding:10px 16px;font-size:15px;font-weight:600;cursor:pointer;margin:10px 6px 0 0}
+ .card{background:#2a1a18;border:1px solid #4a3a30;border-radius:10px;padding:12px;margin-top:12px}
+ .card b{color:#e8c583} pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;margin:8px 0;font-size:14px;color:#f5ead2}
+ .small{font-size:12px;color:#d8c8a6}
+</style></head><body>
+<h1>Invite Links Maker</h1>
+<p>Type one family or person per line. You get a personal link and a ready WhatsApp caption for each.</p>
+<label>Website link</label><input id="site" value="https://nandinikarunesh.vercel.app/">
+<label>Names (one per line)</label><textarea id="names" placeholder="Sharma Family&#10;Mama &amp; Mami&#10;Rohit Uncle"></textarea>
+<label>Message (use {name} where the name should go, and {link} for the link)</label>
+<textarea id="msg">Namaste {name} 🌸
+
+Karunesh &amp; Nandini are getting married, and we would love to have you with us 💛
+Tap the link and pull the rope to open our invitation 🪔
+
+{link}</textarea>
+<button onclick="go()">Make links</button><button onclick="copyAll()">Copy everything</button>
+<div id="out"></div>
+<script>
+ const msgBox=document.getElementById('msg'); msgBox.value=msgBox.value.replace(/&amp;/g,'&');
+ let rows=[];
+ function go(){
+   let site=document.getElementById('site').value.trim().replace(/\/+$/,'');
+   const names=document.getElementById('names').value.split('\n').map(s=>s.trim()).filter(Boolean);
+   const tpl=msgBox.value;
+   rows=names.map(n=>{ const link=site+'/?to='+encodeURIComponent(n); return {n,link,text:tpl.replace(/\{name\}/g,n).replace(/\{link\}/g,link)}; });
+   const out=document.getElementById('out'); out.innerHTML='';
+   rows.forEach((r,i)=>{
+     const d=document.createElement('div'); d.className='card';
+     d.innerHTML='<b></b><pre></pre><div class="small"></div>';
+     d.querySelector('b').textContent=r.n; d.querySelector('pre').textContent=r.text; d.querySelector('.small').textContent=r.link;
+     const b=document.createElement('button'); b.textContent='Copy message'; b.onclick=()=>copy(r.text,b); d.appendChild(b);
+     const l=document.createElement('button'); l.textContent='Copy link only'; l.onclick=()=>copy(r.link,l); d.appendChild(l);
+     out.appendChild(d);
+   });
+ }
+ async function copy(t,btn){ try{ await navigator.clipboard.writeText(t); }catch(e){ const a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); }
+   const o=btn.textContent; btn.textContent='Copied ✓'; setTimeout(()=>btn.textContent=o,1200); }
+ function copyAll(){ copy(rows.map(r=>r.n+'\n'+r.link).join('\n\n'),event.target); }
+</script></body></html>
